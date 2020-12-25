@@ -9,6 +9,11 @@
 #include "riscv.h"
 #include "defs.h"
 
+//让每个cpu拥有自己的内存链表进行分配，就无需获取当前线程的内存链表，
+//同时这里还添加了一个要求，希望当一个cpu内存链表不足的时候，可以从其他链表偷点内存来分配
+// 1.为每个cpu分配内存链表
+// 2.然后修改kinit()，修改kfree()获取和释放相应cpu的锁，这里在获取cpu id的时候把中断关闭防止线程切换
+// 3.然后再给kalloc多添加一个可以偷其他cpu内存链表的功能
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
