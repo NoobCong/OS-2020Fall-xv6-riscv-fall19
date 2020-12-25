@@ -13,7 +13,7 @@ void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
-
+//用于分配物理内存
 struct run
 {
   struct run *next;
@@ -25,6 +25,10 @@ struct
   struct run *freelist;
 } kmem[NCPU];
 
+//系统启动时，调用kinit，对内存分配器进行初始化
+//kinit主要是调用freerange，而freerange的作用是，
+//将end~PHYSTOP之间的内存一页页地加入到free list中进行管理，
+//这个free list的头节点，就是之前定义的kmem.freelist。
 void kinit()
 {
   //printf(" NCPU :%d\n",NCPU);
@@ -59,6 +63,12 @@ void freerange(void *pa_start, void *pa_end)
 // which normally should have been returned by a
 // call to kalloc().  (The exception is when
 // initializing the allocator; see kinit above.)
+//kfree的作用是将从起始地址开始的一页物理内存加入到free list中，
+//他的参数，即物理内存的地址都应该是按页对齐的，
+//他的参数只有两种情况，一是在初始化时，
+//从end~phystop之间的，此时的地址，都是经过按页对齐的，
+//第二种是由kalloc返回的，因为kalloc返回的地址是在
+//freelist中取下来的，所以自然也是按页对齐的
 void kfree(void *pa)
 {
   struct run *r;
